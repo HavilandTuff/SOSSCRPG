@@ -233,7 +233,8 @@
                 <Button Grid.Row="0" Grid.Column="0"
                         Height="25" Width="65" Margin="10"
                         Visibility="{Binding HasTrader, Converter={StaticResource BooleanToVisibility}}"
-                        Content="Trade"/>
+                        Content="Trade"
+                        Click="OnClick_DisplayTradeScreen"/>
 
                 <Button Grid.Row="0" Grid.Column="1" 
                         Height ="25" Width="65" Margin="10" 
