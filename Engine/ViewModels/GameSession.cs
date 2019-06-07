@@ -18,9 +18,25 @@ namespace Engine.ViewModels
         private Location _currentLocation;
         private Monster _currentMonster;
         private Trader _currentTrader;
+        private Player _currentPlayer;
         public bool HasMonster => CurrentMonster != null;
         public bool HasTrader => CurrentTrader != null;
-        public Player CurrentPlayer { get; set; }
+        public Player CurrentPlayer
+        {
+            get { return _currentPlayer; }
+            set
+            {
+                if(_currentPlayer != null)
+                {
+                    _currentPlayer.OnKilled -= OnCurrentPlayerKilled;
+                }
+                _currentPlayer = value;
+                if(_currentPlayer!=null)
+                {
+                    _currentPlayer.OnKilled += OnCurrentPlayerKilled;
+                }
+            }
+        }
         public World CurrentWorld { get; set; }
         
 
@@ -48,12 +64,17 @@ namespace Engine.ViewModels
             get { return _currentMonster; }
             set
             {
+                if(_currentMonster!=null)
+                {
+                    _currentMonster.OnKilled -= OnCurrnetMonsterKilled;
+                }
                 _currentMonster = value;
                 OnPropertyChanged(nameof(CurrentMonster));
                 OnPropertyChanged(nameof(HasMonster));
 
                 if(CurrentMonster != null)
                 {
+                    _currentMonster.OnKilled += OnCurrnetMonsterKilled;
                     RaiseMessage(" ");
                     RaiseMessage($"You see a {CurrentMonster.Name} here!");
                 }
@@ -77,15 +98,8 @@ namespace Engine.ViewModels
 
         public GameSession()
         {
-            CurrentPlayer = new Player
-            {
-                Name = "Scott",
-                CharacterClass = "Fighter",
-                CurrentHitPoints = 10,
-                Gold = 1000000,
-                ExperiencePoints = 0,
-                Level = 1
-            };
+            CurrentPlayer = new Player("Scott", "Fighter", 0, 10, 10, 100);
+            
             if(!CurrentPlayer.Weapons.Any())
             {
                 CurrentPlayer.AddItemToInventory(ItemFactory.CreateGameItem(1001));
@@ -151,7 +165,7 @@ namespace Engine.ViewModels
                         CurrentPlayer.ExperiencePoints += quest.RewardExperiencePonts;
                         RaiseMessage($"You received {quest.RewardExperiencePonts} experience points.");
 
-                        CurrentPlayer.Gold += quest.RewardGold;
+                        CurrentPlayer.ReceiveGold(quest.RewardGold);
                         RaiseMessage($"You received {quest.RewardGold} gold.");
 
                         foreach(ItemQuantity itemQuantity in quest.RewardItems)
@@ -212,49 +226,51 @@ namespace Engine.ViewModels
             }
             else
             {
-                CurrentMonster.CurrentHitPoints -= damageToMonster;
                 RaiseMessage($"You hit the {CurrentMonster.Name} for {damageToMonster} points.");
+                CurrentMonster.TakeDamage(damageToMonster);
             }
 
-            if(CurrentMonster.CurrentHitPoints <= 0)
+            if (CurrentMonster.IsDead)
             {
-                RaiseMessage(" ");
-                RaiseMessage($"You defeated the {CurrentMonster.Name}!");
-                CurrentPlayer.ExperiencePoints += CurrentMonster.RewardExperiencePoints;
-                RaiseMessage($"You receive {CurrentMonster.RewardExperiencePoints} experience points.");
-                CurrentPlayer.Gold += CurrentMonster.Gold;
-                RaiseMessage($"You received {CurrentMonster.Gold} gold.");
-                foreach(GameItem gameItem in CurrentMonster.Inventory)
-                    {
-                    
-                    CurrentPlayer.AddItemToInventory(gameItem);
-                    RaiseMessage($"You recieved one {gameItem.Name}.");
-                }
                 GetMonsterAtLocation();
             }
             else
             {
                 int damageToPlayer = RandomNumberGenerator.NumberBetween(CurrentMonster.MinimumDamage, CurrentMonster.MaximumDamage);
-                if(damageToPlayer == 0)
+                if (damageToPlayer == 0)
                 {
                     RaiseMessage($"The monster attacks but misses you!");
                 }
                 else
                 {
-                    CurrentPlayer.CurrentHitPoints -= damageToPlayer;
                     RaiseMessage($"The {CurrentMonster.Name} hit you for {damageToPlayer} points!");
+                    CurrentPlayer.TakeDamage(damageToPlayer);
                 }
 
-                if(CurrentPlayer.CurrentHitPoints <= 0)
-                {
-                    RaiseMessage(" ");
-                    RaiseMessage($"The {CurrentMonster.Name} killed you!");
-                    CurrentLocation = CurrentWorld.LocationAt(0, -1);
-                    CurrentPlayer.CurrentHitPoints = CurrentPlayer.Level * 10;
-                }
             }
         }
 
+        private void OnCurrentPlayerKilled(object sender, System.EventArgs eventArgs)
+        {
+            RaiseMessage(" ");
+            RaiseMessage($"The {CurrentMonster.Name} killed you!");
+            CurrentLocation = CurrentWorld.LocationAt(0, -1);
+            CurrentPlayer.CompletelyHeal();
+        }
+        private void OnCurrnetMonsterKilled( object sender, System.EventArgs eventArgs)
+        {
+            RaiseMessage(" ");
+            RaiseMessage($"You defeated {CurrentMonster.Name}!");
+            RaiseMessage($"You received {CurrentMonster.RewardExperiencePoints} experience points.");
+            CurrentPlayer.ExperiencePoints += CurrentMonster.RewardExperiencePoints;
+            RaiseMessage($"You received {CurrentMonster.RewardGold} gold.");
+            CurrentPlayer.ReceiveGold(CurrentMonster.Gold);
+            foreach(GameItem item in CurrentMonster.Inventory)
+            {
+                RaiseMessage($"You received one {item.Name}.");
+                CurrentPlayer.AddItemToInventory(item);
+            }
+        }
         private void RaiseMessage(string message)
         {
             OnMessageRaised?.Invoke(this, new GameMessageEventArgs(message));
