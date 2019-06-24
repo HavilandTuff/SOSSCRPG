@@ -28,12 +28,14 @@ namespace Engine.ViewModels
             {
                 if(_currentPlayer != null)
                 {
+                    _currentPlayer.OnActionPerformed -= OnCurrentPlayerPerformedAction;
                     _currentPlayer.OnLeveledUp -= OnCurrentPlayerLeveledUp;
                     _currentPlayer.OnKilled -= OnCurrentPlayerKilled;
                 }
                 _currentPlayer = value;
                 if(_currentPlayer!=null)
                 {
+                    _currentPlayer.OnActionPerformed += OnCurrentPlayerPerformedAction;
                     _currentPlayer.OnLeveledUp += OnCurrentPlayerLeveledUp;
                     _currentPlayer.OnKilled += OnCurrentPlayerKilled;
                 }
@@ -94,7 +96,7 @@ namespace Engine.ViewModels
                 OnPropertyChanged(nameof(HasTrader));
             }
         }
-        public GameItem CurrentWeapon { get; set; }
+       
         #endregion
 
 
@@ -216,21 +218,12 @@ namespace Engine.ViewModels
 
         public void AttackCurrentMonster()
         {
-            if(CurrentWeapon == null)
+            if(CurrentPlayer.CurrentWeapon == null)
             {
                 RaiseMessage("You must select a weapon to attack!");
                 return;
             }
-            int damageToMonster = RandomNumberGenerator.NumberBetween(CurrentWeapon.MinimumDamage, CurrentWeapon.MinimumDamage);
-            if(damageToMonster == 0)
-            {
-                RaiseMessage($"You missed the {CurrentMonster.Name}!");
-            }
-            else
-            {
-                RaiseMessage($"You hit the {CurrentMonster.Name} for {damageToMonster} points.");
-                CurrentMonster.TakeDamage(damageToMonster);
-            }
+            CurrentPlayer.UseCurrentWeaponOn(CurrentMonster);
 
             if (CurrentMonster.IsDead)
             {
@@ -258,6 +251,10 @@ namespace Engine.ViewModels
             RaiseMessage($"You have been killed");
             CurrentLocation = CurrentWorld.LocationAt(0, -1);
             CurrentPlayer.CompletelyHeal();
+        }
+        private void OnCurrentPlayerPerformedAction(object sender, string result)
+        {
+            RaiseMessage(result);
         }
         private void OnCurrnetMonsterKilled( object sender, System.EventArgs eventArgs)
         {
