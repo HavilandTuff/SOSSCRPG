@@ -7,7 +7,7 @@ using Engine.Models;
 
 namespace Engine.Actions
 {
-    public class AttackWithWeapon
+    public class AttackWithWeapon:IActions
     {
         private readonly GameItem _weapon;
         private readonly int _minimumDamage;
