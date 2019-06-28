@@ -35,17 +35,19 @@ namespace Engine.Actions
             _maximumDamage = maximumDamage;
         }
 
-        public void Execute(LivingEntity actor, LivingEntity tartget)
+        public void Execute(LivingEntity actor, LivingEntity target)
         {
             int damage = RandomNumberGenerator.NumberBetween(_minimumDamage, _maximumDamage);
+            string actorName = (actor is Player) ? "You" : $"The {actor.Name.ToLower()}";
+            string targetName = (target is Player) ? "you" : $"the {target.Name.ToLower()}";
             if(damage == 0)
             {
-                ReportResult($"You missed {tartget.Name.ToLower()}.");
+                ReportResult($"{actorName} missed {targetName}.");
             }
             else
             {
-                ReportResult($"You hit the {tartget.Name.ToLower()} for {damage} points.");
-                tartget.TakeDamage(damage);
+                ReportResult($"{actorName} hit {targetName} for {damage} point{(damage>1 ? "s" : "")}.");
+                target.TakeDamage(damage);
             }
         }
 

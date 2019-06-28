@@ -15,6 +15,9 @@ namespace Engine.Factories
         {
             BuildWaepon(1001, "Pointy stick", 1, 1, 2);
             BuildWaepon(1002, "Rusty sword", 5, 1, 3);
+            BuildWaepon(1501, "fangs", 0, 0, 2);
+            BuildWaepon(1502, "claws", 0, 0, 2);
+            BuildWaepon(1503, "fangs", 0, 0, 4);
             BuildMiscellaneousItem(9001, "Snake fang", 1);
             BuildMiscellaneousItem(9002, "Snakeskin", 2);
             BuildMiscellaneousItem(9003, "Rat tail", 1);
