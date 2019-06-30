@@ -7,18 +7,16 @@ using Engine.Models;
 
 namespace Engine.Actions
 {
-    public class AttackWithWeapon:IActions
-    {
-        private readonly GameItem _weapon;
+    public class AttackWithWeapon: BaseAction, IActions
+    {       
         private readonly int _minimumDamage;
         private readonly int _maximumDamage;
-
-        public event EventHandler<string> OnActionPerformed;
-        public AttackWithWeapon(GameItem weapon, int minimumDamage, int maximumDamage)
+                
+        public AttackWithWeapon(GameItem itemInUse, int minimumDamage, int maximumDamage) :base( itemInUse)
         {
-            if (weapon.Category != GameItem.ItemCategory.Weapon)
+            if (itemInUse.Category != GameItem.ItemCategory.Weapon)
             {
-                throw new ArgumentException($"{weapon.Name} is not a weapon!");
+                throw new ArgumentException($"{itemInUse.Name} is not a weapon!");
             }
 
             if (minimumDamage < 0)
@@ -29,8 +27,7 @@ namespace Engine.Actions
             if (maximumDamage < minimumDamage)
             {
                 throw new ArgumentException("maximumDamage must be larger than minimumDamage!");
-            }
-            _weapon = weapon;
+            }           
             _minimumDamage = minimumDamage;
             _maximumDamage = maximumDamage;
         }
@@ -50,10 +47,6 @@ namespace Engine.Actions
                 target.TakeDamage(damage);
             }
         }
-
-        private void ReportResult(string result)
-        {
-            OnActionPerformed?.Invoke(this, result);
-        }
+                
     }
 }

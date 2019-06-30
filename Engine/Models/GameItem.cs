@@ -12,7 +12,8 @@ namespace Engine.Models
         public enum ItemCategory
         {
             Miscellenus,
-            Weapon
+            Weapon,
+            Consumable
         }
         public ItemCategory Category { get; }
         public int ItemTypeID { get; }

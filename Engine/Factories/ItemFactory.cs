@@ -18,6 +18,7 @@ namespace Engine.Factories
             BuildWaepon(1501, "fangs", 0, 0, 2);
             BuildWaepon(1502, "claws", 0, 0, 2);
             BuildWaepon(1503, "fangs", 0, 0, 4);
+            BuildHealingItem(2001, "Granola bar", 5, 2);
             BuildMiscellaneousItem(9001, "Snake fang", 1);
             BuildMiscellaneousItem(9002, "Snakeskin", 2);
             BuildMiscellaneousItem(9003, "Rat tail", 1);
@@ -41,6 +42,13 @@ namespace Engine.Factories
             GameItem weapon = new GameItem(GameItem.ItemCategory.Weapon, id, name, price, true);
             weapon.Action = new AttackWithWeapon(weapon, minimumDamage, maximumDamage);
             _standardGameItems.Add(weapon);
+        }
+
+        private static void BuildHealingItem( int id, string name, int price, int hitPointsToHeal)
+        {
+            GameItem item = new GameItem(GameItem.ItemCategory.Consumable, id, name, price);
+            item.Action = new Heal(item, hitPointsToHeal);
+            _standardGameItems.Add(item);
         }
     }
 }
